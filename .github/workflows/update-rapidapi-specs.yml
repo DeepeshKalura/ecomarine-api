@@ -1,0 +1,148 @@
+name: Update RapidAPI OpenAPI Specs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'main.py'
+      - 'ecomarine/**/*.py'
+      - '.github/workflows/update-rapidapi-specs.yml'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual update'
+
+jobs:
+  update-specs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Cache UV dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Start FastAPI server
+        run: |
+          echo "Starting FastAPI server..."
+          uv run uvicorn main:app --host 0.0.0.0 --port 8000 &
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+          
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8000/ > /dev/null; then
+              echo "✅ Server is ready!"
+              break
+            fi
+            echo "⏳ Waiting for server... ($i/30)"
+            sleep 2
+          done
+          
+          # Verify server is running
+          curl -s http://localhost:8000/ | jq . || echo "Server check failed"
+      
+      - name: Generate OpenAPI JSON from FastAPI
+        run: |
+          echo "📄 Generating OpenAPI specs..."
+          curl -s http://localhost:8000/openapi.json | python -m json.tool > openapi.json
+          
+          if [ -s openapi.json ]; then
+            echo "✅ OpenAPI JSON generated successfully"
+            echo "📊 Size: $(wc -c < openapi.json) bytes"
+            head -20 openapi.json
+          else
+            echo "❌ Failed to generate OpenAPI JSON"
+            exit 1
+          fi
+      
+      - name: Generate OpenAPI YAML
+        run: |
+          echo "📄 Converting to YAML..."
+          uv run python -c "
+          import json
+          import yaml
+          with open('openapi.json', 'r') as f:
+              data = json.load(f)
+          with open('openapi.yaml', 'w') as f:
+              yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+          print('✅ OpenAPI YAML generated')
+          "
+      
+      - name: Update RapidAPI Specs
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RAPIDAPI_API_ID: ${{ secrets.RAPIDAPI_API_ID }}
+          RAPIDAPI_VERSION_ID: ${{ secrets.RAPIDAPI_VERSION_ID }}
+        run: |
+          echo "🚀 Updating RapidAPI specs..."
+          echo "API ID: $RAPIDAPI_API_ID"
+          echo "Version ID: $RAPIDAPI_VERSION_ID"
+          
+          # Update OpenAPI spec on RapidAPI
+          response=$(curl -s -w "\n%{http_code}" -X PUT \
+            "https://rapidapi.com/apis/${RAPIDAPI_API_ID}/versions/${RAPIDAPI_VERSION_ID}/spec" \
+            -H "X-RapidAPI-Key: ${RAPIDAPI_KEY}" \
+            -H "Content-Type: application/json" \
+            -d @openapi.json)
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          if [ "$http_code" = "200" ] || [ "$http_code" = "201" ] || [ "$http_code" = "204" ]; then
+            echo "✅ RapidAPI specs updated successfully!"
+          else
+            echo "⚠️ RapidAPI update returned HTTP $http_code"
+            echo "Response: $body"
+            # Don't fail the workflow if RapidAPI update fails
+            # We still want to commit the updated specs
+          fi
+      
+      - name: Commit updated specs
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Actions Bot"
+          
+          git add openapi.json openapi.yaml
+          
+          if git diff --staged --quiet; then
+            echo "✅ No changes to commit - specs are up to date"
+          else
+            git commit -m "ci: auto-update OpenAPI specs from FastAPI [skip ci]"
+            git push
+            echo "✅ Updated specs committed to repository"
+          fi
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up..."
+          # Find and kill uvicorn process
+          pkill -f "uvicorn" || true
+          echo "✅ Cleanup complete"
