@@ -1,0 +1,1 @@
+Calculate ECA distances & fuel costs for maritime routes. IMO 2020 compliance made simple. Free tier: 50 requests/month.
