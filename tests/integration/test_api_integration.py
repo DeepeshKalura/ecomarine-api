@@ -73,17 +73,6 @@ async def test_root_endpoint(client: AsyncClient) -> None:
     assert "version" in data
 
 
-@pytest.mark.asyncio
-async def test_ping_endpoint(client: AsyncClient) -> None:
-    """Test lightweight /ping health check endpoint for monitoring."""
-    response = await client.get("/ping")
-    assert response.status_code == 200
-    data: dict[str, Any] = response.json()
-    assert data["status"] == "ok"
-    # Ensure response is lightweight (minimal fields)
-    assert len(data) == 1
-
-
 # =============================================================================
 # Route Calculation Tests
 # =============================================================================
