@@ -52,6 +52,15 @@ def root():
     return {"status": "ok", "service": "ECA Marine API", "version": "0.1.0"}
 
 
+@app.get("/ping")
+def ping():
+    """Lightweight health check endpoint for monitoring services.
+
+    Returns simple status for load balancers and health check services.
+    """
+    return {"status": "ok"}
+
+
 # Define request model for route calculation
 class RouteRequest(BaseModel):
     """Request model for route calculation.
