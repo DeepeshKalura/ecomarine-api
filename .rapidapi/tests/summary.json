@@ -1,11 +1,11 @@
 {
   "total_tests": 14,
   "endpoints": [
-    "/supported-zones",
     "/check-point",
     "/calculate_route",
-    "/",
-    "/ping"
+    "/ping",
+    "/supported-zones",
+    "/"
   ],
   "test_names": [
     "Root Endpoint (GET /)",
