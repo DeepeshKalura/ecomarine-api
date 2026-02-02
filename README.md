@@ -28,6 +28,23 @@ Maritime shipping routes pass through **Emission Control Areas (ECAs)** where st
 
 ---
 
+## 🎮 Live Demo
+
+Try the **interactive demo** to see the API in action:
+
+🌐 **[View Interactive Demo](./demo/)** (Open `demo/index.html` in your browser)
+
+### Demo Features:
+- 🗺️ **Route Calculator** - Visual map-based route planning with ECA tracking
+- 📍 **ECA Zone Checker** - Click on the map to check if coordinates are in ECA zones  
+- 🌍 **Supported Zones** - Browse all ECA zones with interactive map visualization
+- 📡 **Live API Testing** - Test all 3 endpoints with your RapidAPI key
+- 🗺️ **OpenStreetMap Integration** - Free, no API key required for maps
+
+**Perfect for RapidAPI showcase!** Deploy the `demo/` folder to GitHub Pages, Vercel, or Netlify.
+
+---
+
 ## 🌍 Perfect For
 
 - **Voyage Planning Software** - Pre-departure fuel calculations

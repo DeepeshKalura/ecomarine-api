@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecomarine API Demo - Maritime ECA Route Planning</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header class="demo-header">
+            <div class="logo">
+                <h1>🚢 Ecomarine API Demo</h1>
+                <p>ECA Distance & Compliance for Maritime Routes</p>
+            </div>
+            <div class="api-config">
+                <label for="api-key">RapidAPI Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your RapidAPI key">
+                <button id="save-api-key" class="btn-small">Save</button>
+            </div>
+        </header>
+
+        <nav class="demo-nav">
+            <a href="index.html" class="nav-link active">🏠 Overview</a>
+            <a href="route-calculator.html" class="nav-link">🗺️ Route Calculator</a>
+            <a href="zone-checker.html" class="nav-link">📍 ECA Zone Checker</a>
+            <a href="supported-zones.html" class="nav-link">🌍 Supported Zones</a>
+        </nav>
+
+        <main class="demo-content">
+            <section class="intro-section">
+                <h2>Welcome to Ecomarine API Demo</h2>
+                <p>This interactive demo showcases the <strong>Ecomarine API</strong> - a specialized maritime navigation API for calculating routes within Emission Control Areas (ECAs).</p>
+                
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-icon">🗺️</div>
+                        <h3>Route Calculator</h3>
+                        <p>Calculate marine routes with ECA distance tracking. Visualize routes on an interactive map and get detailed distance breakdowns.</p>
+                        <a href="route-calculator.html" class="btn-primary">Try Route Calculator</a>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">📍</div>
+                        <h3>ECA Zone Checker</h3>
+                        <p>Check if any coordinates fall within ECA zones. Click on the map or enter coordinates to verify compliance requirements.</p>
+                        <a href="zone-checker.html" class="btn-primary">Try Zone Checker</a>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="feature-icon">🌍</div>
+                        <h3>Supported Zones</h3>
+                        <p>View all supported ECA zones with detailed metadata including sulphur limits, regulations, and territorial boundaries.</p>
+                        <a href="supported-zones.html" class="btn-primary">View Zones</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="api-info">
+                <h2>📡 API Endpoints</h2>
+                <div class="endpoint-list">
+                    <div class="endpoint-item">
+                        <span class="method post">POST</span>
+                        <code>/calculate_route</code>
+                        <span class="description">Calculate marine route with ECA distances</span>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <code>/check-point</code>
+                        <span class="description">Check if point is inside ECA zone</span>
+                    </div>
+                    <div class="endpoint-item">
+                        <span class="method get">GET</span>
+                        <code>/supported-zones</code>
+                        <span class="description">List all supported ECA zones</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="quick-start">
+                <h2>🚀 Quick Start</h2>
+                <ol class="steps">
+                    <li>Enter your <strong>RapidAPI Key</strong> in the header above</li>
+                    <li>Click on any demo from the navigation menu</li>
+                    <li>Interact with the map and forms</li>
+                    <li>See real-time API responses</li>
+                </ol>
+                <p class="note">💡 <strong>Note:</strong> You can get a free API key from <a href="https://rapidapi.com" target="_blank">RapidAPI</a></p>
+            </section>
+        </main>
+
+        <footer class="demo-footer">
+            <p>🔗 <a href="https://www.linkedin.com/in/deepeshkalura/" target="_blank">Connect on LinkedIn</a></p>
+            <p>📧 Contact: deepeshkalurs@gmail.com</p>
+            <p class="copyright">© 2025 Ecomarine API - Maritime ECA Compliance</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

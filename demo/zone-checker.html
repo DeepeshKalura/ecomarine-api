@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECA Zone Checker - Ecomarine API Demo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header class="demo-header">
+            <div class="logo">
+                <h1>🚢 Ecomarine API Demo</h1>
+                <p>ECA Distance & Compliance for Maritime Routes</p>
+            </div>
+            <div class="api-config">
+                <label for="api-key">RapidAPI Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your RapidAPI key">
+                <button id="save-api-key" class="btn-small">Save</button>
+                <span id="api-status" class="status-indicator"></span>
+            </div>
+        </header>
+
+        <nav class="demo-nav">
+            <a href="index.html" class="nav-link">🏠 Overview</a>
+            <a href="route-calculator.html" class="nav-link">🗺️ Route Calculator</a>
+            <a href="zone-checker.html" class="nav-link active">📍 ECA Zone Checker</a>
+            <a href="supported-zones.html" class="nav-link">🌍 Supported Zones</a>
+        </nav>
+
+        <main class="demo-content">
+            <section class="demo-section">
+                <h2>📍 ECA Zone Checker</h2>
+                <p class="description">Check if any coordinates fall within Emission Control Areas (ECAs). Click on the map or enter coordinates to verify compliance requirements.</p>
+
+                <div class="demo-layout">
+                    <div class="map-container">
+                        <div id="zone-map" class="map"></div>
+                        <div class="map-controls">
+                            <button id="clear-markers" class="btn-secondary">Clear Markers</button>
+                            <button id="show-all-zones" class="btn-secondary">Show All ECA Zones</button>
+                        </div>
+                        <div class="zone-legend">
+                            <h4>Zone Legend</h4>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #e74c3c;"></span>
+                                <span>North Sea SECA (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #3498db;"></span>
+                                <span>Baltic Sea SECA (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #2ecc71;"></span>
+                                <span>Mediterranean ECA (0.5%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #f39c12;"></span>
+                                <span>US ECA (0.1%)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="form-section">
+                            <h3>Check Coordinates</h3>
+                            <p class="hint">💡 Click anywhere on the map to check that location</p>
+                            
+                            <div class="coordinate-inputs">
+                                <div class="input-group">
+                                    <label>Latitude:</label>
+                                    <input type="number" id="check-lat" step="0.0001" placeholder="58.5">
+                                </div>
+                                <div class="input-group">
+                                    <label>Longitude:</label>
+                                    <input type="number" id="check-lon" step="0.0001" placeholder="3.2">
+                                </div>
+                            </div>
+
+                            <div class="preset-locations">
+                                <label>Quick Test Locations:</label>
+                                <div class="preset-buttons">
+                                    <button class="preset-btn" data-lat="58.5" data-lon="3.2">North Sea</button>
+                                    <button class="preset-btn" data-lat="56.0" data-lon="18.0">Baltic Sea</button>
+                                    <button class="preset-btn" data-lat="42.0" data-lon="12.0">Mediterranean</button>
+                                    <button class="preset-btn" data-lat="40.7" data-lon="-74.0">New York (US ECA)</button>
+                                    <button class="preset-btn" data-lat="1.35" data-lon="103.82">Singapore (Outside ECA)</button>
+                                </div>
+                            </div>
+
+                            <button id="check-point" class="btn-primary btn-large">🔍 Check Point</button>
+                        </div>
+
+                        <div class="result-panel" id="zone-result" style="display: none;">
+                            <h3>Result</h3>
+                            <div id="inside-eca" class="result-status">
+                                <span class="status-icon">✅</span>
+                                <span class="status-text">Inside ECA Zone</span>
+                            </div>
+                            <div id="outside-eca" class="result-status" style="display: none;">
+                                <span class="status-icon">❌</span>
+                                <span class="status-text">Outside All ECA Zones</span>
+                            </div>
+                            
+                            <div class="zone-details" id="zone-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Zone Name:</span>
+                                    <span class="detail-value" id="zone-name">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Zone Type:</span>
+                                    <span class="detail-value" id="zone-type">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Required Sulphur:</span>
+                                    <span class="detail-value" id="sulphur-limit">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Regulation:</span>
+                                    <span class="detail-value" id="regulation">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Territory:</span>
+                                    <span class="detail-value" id="territory">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>ℹ️ About ECA Zones</h3>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h4>🌊 What is an ECA?</h4>
+                            <p><strong>Emission Control Areas (ECAs)</strong> are sea areas where stricter controls are in place to minimize airborne emissions from ships. These include Sulphur Emission Control Areas (SECAs) and Nitrogen Emission Control Areas (NECAs).</p>
+                        </div>
+                        <div class="info-card">
+                            <h4>⚖️ IMO 2020 Compliance</h4>
+                            <p>Under <strong>IMO 2020</strong>, ships must use fuel with max <strong>0.5% sulphur</strong> globally. In ECAs, the limit is stricter at <strong>0.1%</strong>. Non-compliance fines range from $15,000-$50,000+.</p>
+                        </div>
+                        <div class="info-card">
+                            <h4>💰 Fuel Cost Impact</h4>
+                            <p>Low-sulphur fuel costs <strong>30-50% more</strong> than standard marine fuel. Knowing your ECA exposure helps optimize routes and reduce fuel costs while maintaining compliance.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="api-debug">
+                    <h3>📡 API Request/Response</h3>
+                    <div class="code-tabs">
+                        <button class="tab-btn active" data-tab="request">Request</button>
+                        <button class="tab-btn" data-tab="response">Response</button>
+                        <button class="tab-btn" data-tab="curl">cURL</button>
+                    </div>
+                    <div class="code-content">
+                        <pre id="request-code" class="code-block active"><code>// Click "Check Point" to see the API request</code></pre>
+                        <pre id="response-code" class="code-block"><code>// Response will appear here</code></pre>
+                        <pre id="curl-code" class="code-block"><code>// cURL command will appear here</code></pre>
+                    </div>
+                    <button class="btn-small" onclick="copyCode('request-code')">📋 Copy Request</button>
+                    <button class="btn-small" onclick="copyCode('response-code')">📋 Copy Response</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="demo-footer">
+            <p>🔗 <a href="https://www.linkedin.com/in/deepeshkalura/" target="_blank">Connect on LinkedIn</a></p>
+            <p>📧 Contact: deepeshkalurs@gmail.com</p>
+            <p class="copyright">© 2025 Ecomarine API - Maritime ECA Compliance</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Initialize zone checker page
+        if (document.getElementById('zone-map')) {
+            initZoneChecker();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supported ECA Zones - Ecomarine API Demo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header class="demo-header">
+            <div class="logo">
+                <h1>🚢 Ecomarine API Demo</h1>
+                <p>ECA Distance & Compliance for Maritime Routes</p>
+            </div>
+            <div class="api-config">
+                <label for="api-key">RapidAPI Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your RapidAPI key">
+                <button id="save-api-key" class="btn-small">Save</button>
+                <span id="api-status" class="status-indicator"></span>
+            </div>
+        </header>
+
+        <nav class="demo-nav">
+            <a href="index.html" class="nav-link">🏠 Overview</a>
+            <a href="route-calculator.html" class="nav-link">🗺️ Route Calculator</a>
+            <a href="zone-checker.html" class="nav-link">📍 ECA Zone Checker</a>
+            <a href="supported-zones.html" class="nav-link active">🌍 Supported Zones</a>
+        </nav>
+
+        <main class="demo-content">
+            <section class="demo-section">
+                <h2>🌍 Supported ECA Zones</h2>
+                <p class="description">View all Emission Control Areas supported by the Ecomarine API. Get detailed metadata including sulphur limits, regulations, and territorial information.</p>
+
+                <div class="zones-layout">
+                    <div class="zones-list-container">
+                        <div class="zones-header">
+                            <h3>ECA Zones Overview</h3>
+                            <button id="refresh-zones" class="btn-small">🔄 Refresh Data</button>
+                        </div>
+                        
+                        <div class="zones-stats">
+                            <div class="stat-item">
+                                <span class="stat-number" id="total-zones">-</span>
+                                <span class="stat-label">Total Zones</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="active-zones">-</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                        </div>
+
+                        <div class="zones-table-container">
+                            <table class="zones-table" id="zones-table">
+                                <thead>
+                                    <tr>
+                                        <th>Zone Name</th>
+                                        <th>Type</th>
+                                        <th>Sulphur Limit</th>
+                                        <th>Regulation</th>
+                                        <th>Territory</th>
+                                        <th>Year Est.</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="zones-tbody">
+                                    <tr>
+                                        <td colspan="6" class="loading">Click "Refresh Data" to load zones...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="zones-map-container">
+                        <h3>Zone Coverage Map</h3>
+                        <div id="zones-map" class="map"></div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #e74c3c;"></span>
+                                <span>North Sea SECA (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #3498db;"></span>
+                                <span>Baltic Sea SECA (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #2ecc71;"></span>
+                                <span>Mediterranean ECA (0.5%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #f39c12;"></span>
+                                <span>US ECA Caribbean (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #9b59b6;"></span>
+                                <span>US ECA East Coast (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #1abc9c;"></span>
+                                <span>US ECA West Coast (0.1%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #e67e22;"></span>
+                                <span>US ECA Gulf Coast (0.1%)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="zone-details-section">
+                    <h3>📋 Zone Details</h3>
+                    <p>Click on any zone in the table above to see detailed information and bounding box coordinates.</p>
+                    
+                    <div class="zone-detail-card" id="zone-detail-card" style="display: none;">
+                        <h4 id="detail-name">Zone Name</h4>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">Type:</span>
+                                <span class="detail-value" id="detail-type">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Sulphur Limit:</span>
+                                <span class="detail-value" id="detail-sulphur">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Regulation:</span>
+                                <span class="detail-value" id="detail-regulation">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Territory:</span>
+                                <span class="detail-value" id="detail-territory">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Year Established:</span>
+                                <span class="detail-value" id="detail-year">-</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Status:</span>
+                                <span class="detail-value" id="detail-status">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bounding-box">
+                            <h5>Bounding Box</h5>
+                            <div class="bbox-grid">
+                                <div class="bbox-item">
+                                    <span class="bbox-label">Min Latitude:</span>
+                                    <span class="bbox-value" id="bbox-min-lat">-</span>
+                                </div>
+                                <div class="bbox-item">
+                                    <span class="bbox-label">Max Latitude:</span>
+                                    <span class="bbox-value" id="bbox-max-lat">-</span>
+                                </div>
+                                <div class="bbox-item">
+                                    <span class="bbox-label">Min Longitude:</span>
+                                    <span class="bbox-value" id="bbox-min-lon">-</span>
+                                </div>
+                                <div class="bbox-item">
+                                    <span class="bbox-label">Max Longitude:</span>
+                                    <span class="bbox-value" id="bbox-max-lon">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-info">
+                    <h3>⚖️ Compliance Summary</h3>
+                    <div class="compliance-grid">
+                        <div class="compliance-card">
+                            <div class="compliance-header">
+                                <span class="sulphur-badge low">0.1%</span>
+                                <h4>SECA Zones</h4>
+                            </div>
+                            <p><strong>Sulphur Emission Control Areas</strong> require fuel with maximum 0.1% sulphur content. These areas have the strictest regulations.</p>
+                            <ul>
+                                <li>North Sea SECA</li>
+                                <li>Baltic Sea SECA</li>
+                                <li>All US ECA regions</li>
+                                <li>US Caribbean ECA</li>
+                            </ul>
+                        </div>
+
+                        <div class="compliance-card">
+                            <div class="compliance-header">
+                                <span class="sulphur-badge medium">0.5%</span>
+                                <h4>ECA Zones</h4>
+                            </div>
+                            <p><strong>Emission Control Areas</strong> with 0.5% sulphur limit. Less strict than SECA but still require special fuel.</p>
+                            <ul>
+                                <li>Mediterranean ECA</li>
+                                <li>Other regional ECAs</li>
+                            </ul>
+                        </div>
+
+                        <div class="compliance-card">
+                            <div class="compliance-header">
+                                <span class="sulphur-badge high">0.5%</span>
+                                <h4>Global Cap</h4>
+                            </div>
+                            <p><strong>IMO 2020 Global Sulphur Cap</strong> requires 0.5% sulphur fuel worldwide, outside of ECAs. This is the baseline standard.</p>
+                            <ul>
+                                <li>All international waters</li>
+                                <li>Areas not designated as ECA</li>
+                                <li>Baseline from Jan 1, 2020</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="api-debug">
+                    <h3>📡 API Request/Response</h3>
+                    <div class="code-tabs">
+                        <button class="tab-btn active" data-tab="request">Request</button>
+                        <button class="tab-btn" data-tab="response">Response</button>
+                        <button class="tab-btn" data-tab="curl">cURL</button>
+                    </div>
+                    <div class="code-content">
+                        <pre id="request-code" class="code-block active"><code>// Click "Refresh Data" to see the API request</code></pre>
+                        <pre id="response-code" class="code-block"><code>// Response will appear here</code></pre>
+                        <pre id="curl-code" class="code-block"><code>// cURL command will appear here</code></pre>
+                    </div>
+                    <button class="btn-small" onclick="copyCode('request-code')">📋 Copy Request</button>
+                    <button class="btn-small" onclick="copyCode('response-code')">📋 Copy Response</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="demo-footer">
+            <p>🔗 <a href="https://www.linkedin.com/in/deepeshkalura/" target="_blank">Connect on LinkedIn</a></p>
+            <p>📧 Contact: deepeshkalurs@gmail.com</p>
+            <p class="copyright">© 2025 Ecomarine API - Maritime ECA Compliance</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Initialize supported zones page
+        if (document.getElementById('zones-map')) {
+            initSupportedZones();
+        }
+    </script>
+</body>
+</html>

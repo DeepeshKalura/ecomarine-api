@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Calculator - Ecomarine API Demo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header class="demo-header">
+            <div class="logo">
+                <h1>🚢 Ecomarine API Demo</h1>
+                <p>ECA Distance & Compliance for Maritime Routes</p>
+            </div>
+            <div class="api-config">
+                <label for="api-key">RapidAPI Key:</label>
+                <input type="password" id="api-key" placeholder="Enter your RapidAPI key">
+                <button id="save-api-key" class="btn-small">Save</button>
+                <span id="api-status" class="status-indicator"></span>
+            </div>
+        </header>
+
+        <nav class="demo-nav">
+            <a href="index.html" class="nav-link">🏠 Overview</a>
+            <a href="route-calculator.html" class="nav-link active">🗺️ Route Calculator</a>
+            <a href="zone-checker.html" class="nav-link">📍 ECA Zone Checker</a>
+            <a href="supported-zones.html" class="nav-link">🌍 Supported Zones</a>
+        </nav>
+
+        <main class="demo-content">
+            <section class="demo-section">
+                <h2>🗺️ Route Calculator</h2>
+                <p class="description">Calculate marine routes with ECA distance tracking. Click on the map to set origin and destination, or enter coordinates manually.</p>
+
+                <div class="demo-layout">
+                    <div class="map-container">
+                        <div id="route-map" class="map"></div>
+                        <div class="map-controls">
+                            <button id="clear-route" class="btn-secondary">Clear Route</button>
+                            <button id="fit-bounds" class="btn-secondary">Fit to Route</button>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <div class="form-section">
+                            <h3>Origin</h3>
+                            <div class="port-selector">
+                                <label>Quick Select Port:</label>
+                                <select id="origin-port" class="port-dropdown">
+                                    <option value="">-- Select Port --</option>
+                                    <option value="51.9244,4.4777">Rotterdam, Netherlands</option>
+                                    <option value="51.5074,-0.1278">London, UK</option>
+                                    <option value="40.7128,-74.0060">New York, USA</option>
+                                    <option value="1.3521,103.8198">Singapore</option>
+                                    <option value="35.6762,139.6503">Tokyo, Japan</option>
+                                    <option value="-33.8688,151.2093">Sydney, Australia</option>
+                                    <option value="25.2048,55.2708">Dubai, UAE</option>
+                                    <option value="-22.9068,-43.1729">Rio de Janeiro, Brazil</option>
+                                    <option value="59.9139,10.7522">Oslo, Norway</option>
+                                    <option value="55.7558,37.6173">Moscow, Russia</option>
+                                </select>
+                            </div>
+                            <div class="coordinate-inputs">
+                                <div class="input-group">
+                                    <label>Latitude:</label>
+                                    <input type="number" id="origin-lat" step="0.0001" placeholder="51.9244">
+                                </div>
+                                <div class="input-group">
+                                    <label>Longitude:</label>
+                                    <input type="number" id="origin-lon" step="0.0001" placeholder="4.4777">
+                                </div>
+                            </div>
+                            <button id="set-origin-map" class="btn-small">📍 Set from Map Click</button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Destination</h3>
+                            <div class="port-selector">
+                                <label>Quick Select Port:</label>
+                                <select id="dest-port" class="port-dropdown">
+                                    <option value="">-- Select Port --</option>
+                                    <option value="51.9244,4.4777">Rotterdam, Netherlands</option>
+                                    <option value="51.5074,-0.1278">London, UK</option>
+                                    <option value="40.7128,-74.0060">New York, USA</option>
+                                    <option value="1.3521,103.8198">Singapore</option>
+                                    <option value="35.6762,139.6503">Tokyo, Japan</option>
+                                    <option value="-33.8688,151.2093">Sydney, Australia</option>
+                                    <option value="25.2048,55.2708">Dubai, UAE</option>
+                                    <option value="-22.9068,-43.1729">Rio de Janeiro, Brazil</option>
+                                    <option value="59.9139,10.7522">Oslo, Norway</option>
+                                    <option value="55.7558,37.6173">Moscow, Russia</option>
+                                </select>
+                            </div>
+                            <div class="coordinate-inputs">
+                                <div class="input-group">
+                                    <label>Latitude:</label>
+                                    <input type="number" id="dest-lat" step="0.0001" placeholder="40.7128">
+                                </div>
+                                <div class="input-group">
+                                    <label>Longitude:</label>
+                                    <input type="number" id="dest-lon" step="0.0001" placeholder="-74.0060">
+                                </div>
+                            </div>
+                            <button id="set-dest-map" class="btn-small">📍 Set from Map Click</button>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Route Options</h3>
+                            <div class="restrictions">
+                                <label>Passage Restrictions:</label>
+                                <div class="checkbox-group">
+                                    <label><input type="checkbox" value="suez"> Suez Canal</label>
+                                    <label><input type="checkbox" value="panama"> Panama Canal</label>
+                                    <label><input type="checkbox" value="gibraltar"> Gibraltar</label>
+                                    <label><input type="checkbox" value="ormuz"> Strait of Hormuz</label>
+                                    <label><input type="checkbox" value="northwest"> Northwest Passage</label>
+                                    <label><input type="checkbox" value="babalmandab"> Bab-el-Mandeb</label>
+                                    <label><input type="checkbox" value="bosporus"> Bosporus</label>
+                                    <label><input type="checkbox" value="chili"> Magellan Strait</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="calculate-route" class="btn-primary btn-large">🚀 Calculate Route</button>
+                    </div>
+                </div>
+
+                <div class="results-container" id="route-results" style="display: none;">
+                    <h3>📊 Route Results</h3>
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <span class="result-label">Total Distance</span>
+                            <span class="result-value" id="total-distance">-</span>
+                            <span class="result-unit">nautical miles</span>
+                        </div>
+                        <div class="result-card highlight">
+                            <span class="result-label">ECA Distance</span>
+                            <span class="result-value" id="eca-distance">-</span>
+                            <span class="result-unit">nautical miles</span>
+                        </div>
+                        <div class="result-card">
+                            <span class="result-label">ECA Percentage</span>
+                            <span class="result-value" id="eca-percentage">-</span>
+                            <span class="result-unit">%</span>
+                        </div>
+                        <div class="result-card">
+                            <span class="result-label">Traversed Passage</span>
+                            <span class="result-value" id="traversed-passage">-</span>
+                        </div>
+                    </div>
+
+                    <div class="eca-bar-container">
+                        <label>ECA Coverage:</label>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="eca-progress"></div>
+                        </div>
+                        <span id="eca-bar-text">0%</span>
+                    </div>
+                </div>
+
+                <div class="api-debug">
+                    <h3>📡 API Request/Response</h3>
+                    <div class="code-tabs">
+                        <button class="tab-btn active" data-tab="request">Request</button>
+                        <button class="tab-btn" data-tab="response">Response</button>
+                        <button class="tab-btn" data-tab="curl">cURL</button>
+                    </div>
+                    <div class="code-content">
+                        <pre id="request-code" class="code-block active"><code>// Click "Calculate Route" to see the API request</code></pre>
+                        <pre id="response-code" class="code-block"><code>// Response will appear here</code></pre>
+                        <pre id="curl-code" class="code-block"><code>// cURL command will appear here</code></pre>
+                    </div>
+                    <button class="btn-small" onclick="copyCode('request-code')">📋 Copy Request</button>
+                    <button class="btn-small" onclick="copyCode('response-code')">📋 Copy Response</button>
+                </div>
+            </section>
+        </main>
+
+        <footer class="demo-footer">
+            <p>🔗 <a href="https://www.linkedin.com/in/deepeshkalura/" target="_blank">Connect on LinkedIn</a></p>
+            <p>📧 Contact: deepeshkalurs@gmail.com</p>
+            <p class="copyright">© 2025 Ecomarine API - Maritime ECA Compliance</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Initialize route calculator page
+        if (document.getElementById('route-map')) {
+            initRouteCalculator();
+        }
+    </script>
+</body>
+</html>
