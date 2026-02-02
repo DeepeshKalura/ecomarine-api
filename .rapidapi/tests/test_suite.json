@@ -1,0 +1,325 @@
+{
+  "test_suite": {
+    "name": "Ecomarine API Test Suite",
+    "description": "Automated test cases extracted from Python integration tests",
+    "version": "1.0.0",
+    "created_at": "{{timestamp}}",
+    "tests": [
+      {
+        "name": "Root Endpoint (GET /)",
+        "description": "Test root health check endpoint.",
+        "endpoint": "/",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "status",
+            "expected": "ok"
+          },
+          {
+            "type": "equals",
+            "field": "service",
+            "expected": "ECA Marine API"
+          },
+          {
+            "type": "exists",
+            "field": "version"
+          }
+        ],
+        "original_test_name": "test_root_endpoint"
+      },
+      {
+        "name": "Ping Endpoint (GET /ping)",
+        "description": "Test lightweight /ping health check endpoint for monitoring.",
+        "endpoint": "/ping",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "status",
+            "expected": "ok"
+          }
+        ],
+        "original_test_name": "test_ping_endpoint"
+      },
+      {
+        "name": "Calculate Route Rotterdam To New York (POST /calculate_route)",
+        "description": "Test route calculation from Rotterdam to New York.\n\nThis is a classic Atlantic route that should go through:\n- English Channel\n- Atlantic Ocean\n- Past Nova Scotia\n- Into New York\n\nExpected to use no major passages (Suez/Panama) for Atlantic crossing.",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            51.9244,
+            4.4777
+          ],
+          "destination": [
+            40.7128,
+            -74.006
+          ],
+          "restrictions": [],
+          "include_explanation": false
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "origin",
+            "expected": "ROTTERDAM"
+          },
+          {
+            "type": "equals",
+            "field": "destination",
+            "expected": "NEW_YORK"
+          },
+          {
+            "type": "equals",
+            "field": "restrictions",
+            "expected": []
+          },
+          {
+            "type": "exists",
+            "field": "distance_nm"
+          },
+          {
+            "type": "exists",
+            "field": "eca_distance_nm"
+          },
+          {
+            "type": "exists",
+            "field": "waypoints"
+          },
+          {
+            "type": "range",
+            "field": "distance_nm",
+            "min": 3000,
+            "max": 5000
+          }
+        ],
+        "original_test_name": "test_calculate_route_rotterdam_to_new_york"
+      },
+      {
+        "name": "Calculate Route Singapore To Rotterdam Via Suez (POST /calculate_route)",
+        "description": "Test route from Singapore to Rotterdam via Suez Canal.\n\nThis is a major East-West route that should traverse:\n- Strait of Malacca\n- Indian Ocean\n- Red Sea\n- Suez Canal\n- Mediterranean\n- Into Rotterdam",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            1.3521,
+            103.8198
+          ],
+          "destination": [
+            51.9244,
+            4.4777
+          ],
+          "restrictions": [],
+          "include_explanation": false
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "traversed_passage",
+            "expected": "suez"
+          }
+        ],
+        "original_test_name": "test_calculate_route_singapore_to_rotterdam_via_suez"
+      },
+      {
+        "name": "Calculate Route With Suez Restriction (POST /calculate_route)",
+        "description": "Test route from Singapore to Rotterdam with Suez restricted.\n\nShould force route around Cape of Good Hope (South Africa).\nThis should result in a longer distance.",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            1.3521,
+            103.8198
+          ],
+          "destination": [
+            51.9244,
+            4.4777
+          ],
+          "restrictions": [
+            "suez"
+          ],
+          "include_explanation": false
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_calculate_route_with_suez_restriction"
+      },
+      {
+        "name": "Calculate Route Us West To Asia (POST /calculate_route)",
+        "description": "Test route from Los Angeles to Singapore.\n\nShould cross Pacific Ocean.",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            34.0522,
+            -118.2437
+          ],
+          "destination": [
+            1.3521,
+            103.8198
+          ],
+          "restrictions": [],
+          "include_explanation": false
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_calculate_route_us_west_to_asia"
+      },
+      {
+        "name": "Calculate Route Invalid Coordinates (POST /calculate_route)",
+        "description": "Test route calculation with invalid coordinates.\n\nShould return 400 Bad Request for out-of-bounds coordinates.",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": "[95.0",
+          "destination": [
+            40.7128,
+            -74.006
+          ]
+        },
+        "params": null,
+        "expected_status": 400,
+        "assertions": [],
+        "original_test_name": "test_calculate_route_invalid_coordinates"
+      },
+      {
+        "name": "Check Point Invalid Coordinates (GET /check-point)",
+        "description": "Test check-point with invalid coordinates.\n\nFastAPI should auto-validate bounds and return 422.",
+        "endpoint": "/check-point",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 422,
+        "assertions": [],
+        "original_test_name": "test_check_point_invalid_coordinates"
+      },
+      {
+        "name": "Supported Zones Endpoint (GET /supported-zones)",
+        "description": "Test /supported-zones endpoint returns all ECA zones.",
+        "endpoint": "/supported-zones",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "count",
+            "expected": 7
+          },
+          {
+            "type": "exists",
+            "field": "zones"
+          },
+          {
+            "type": "exists",
+            "field": "count"
+          }
+        ],
+        "original_test_name": "test_supported_zones_endpoint"
+      },
+      {
+        "name": "Supported Zones Sulphur Limits (GET /supported-zones)",
+        "description": "Test that zones have correct sulphur limits.",
+        "endpoint": "/supported-zones",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_supported_zones_sulphur_limits"
+      },
+      {
+        "name": "Supported Zones Bounding Boxes (GET /supported-zones)",
+        "description": "Test that all zones have valid bounding boxes.",
+        "endpoint": "/supported-zones",
+        "method": "GET",
+        "payload": null,
+        "params": null,
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_supported_zones_bounding_boxes"
+      },
+      {
+        "name": "Route With Multiple Restrictions (POST /calculate_route)",
+        "description": "Test route with multiple passage restrictions.",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            1.3521,
+            103.8198
+          ],
+          "destination": [
+            51.5074,
+            -0.1278
+          ],
+          "restrictions": "[\"suez\"",
+          "include_explanation": false
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_route_with_multiple_restrictions"
+      },
+      {
+        "name": "Route Coordinate Format (POST /calculate_route)",
+        "description": "Test that API accepts [lat, lon] and returns waypoints in [lat, lon].",
+        "endpoint": "/calculate_route",
+        "method": "POST",
+        "payload": {
+          "origin": [
+            51.9244,
+            4.4777
+          ],
+          "destination": [
+            51.5074,
+            -0.1278
+          ]
+        },
+        "params": null,
+        "expected_status": 200,
+        "assertions": [
+          {
+            "type": "equals",
+            "field": "origin",
+            "expected": "ROTTERDAM"
+          },
+          {
+            "type": "equals",
+            "field": "destination",
+            "expected": "LONDON"
+          }
+        ],
+        "original_test_name": "test_route_coordinate_format"
+      },
+      {
+        "name": "Endpoint Response Times (GET /)",
+        "description": "Test that endpoints respond within reasonable time.\n\nThis is a basic smoke test to catch major performance regressions.",
+        "endpoint": "/",
+        "method": "GET",
+        "payload": null,
+        "params": {
+          "latitude": 54.5,
+          "longitude": 3.0
+        },
+        "expected_status": 200,
+        "assertions": [],
+        "original_test_name": "test_endpoint_response_times"
+      }
+    ]
+  }
+}

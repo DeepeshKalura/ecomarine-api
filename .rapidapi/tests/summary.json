@@ -1,0 +1,26 @@
+{
+  "total_tests": 14,
+  "endpoints": [
+    "/supported-zones",
+    "/check-point",
+    "/calculate_route",
+    "/",
+    "/ping"
+  ],
+  "test_names": [
+    "Root Endpoint (GET /)",
+    "Ping Endpoint (GET /ping)",
+    "Calculate Route Rotterdam To New York (POST /calculate_route)",
+    "Calculate Route Singapore To Rotterdam Via Suez (POST /calculate_route)",
+    "Calculate Route With Suez Restriction (POST /calculate_route)",
+    "Calculate Route Us West To Asia (POST /calculate_route)",
+    "Calculate Route Invalid Coordinates (POST /calculate_route)",
+    "Check Point Invalid Coordinates (GET /check-point)",
+    "Supported Zones Endpoint (GET /supported-zones)",
+    "Supported Zones Sulphur Limits (GET /supported-zones)",
+    "Supported Zones Bounding Boxes (GET /supported-zones)",
+    "Route With Multiple Restrictions (POST /calculate_route)",
+    "Route Coordinate Format (POST /calculate_route)",
+    "Endpoint Response Times (GET /)"
+  ]
+}

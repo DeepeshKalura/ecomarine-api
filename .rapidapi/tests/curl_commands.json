@@ -1,0 +1,158 @@
+{
+  "Root Endpoint (GET /)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "status",
+        "expected": "ok"
+      },
+      {
+        "type": "equals",
+        "field": "service",
+        "expected": "ECA Marine API"
+      },
+      {
+        "type": "exists",
+        "field": "version"
+      }
+    ]
+  },
+  "Ping Endpoint (GET /ping)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/ping\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "status",
+        "expected": "ok"
+      }
+    ]
+  },
+  "Calculate Route Rotterdam To New York (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [51.9244, 4.4777], \"destination\": [40.7128, -74.006], \"restrictions\": [], \"include_explanation\": false}'",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "origin",
+        "expected": "ROTTERDAM"
+      },
+      {
+        "type": "equals",
+        "field": "destination",
+        "expected": "NEW_YORK"
+      },
+      {
+        "type": "equals",
+        "field": "restrictions",
+        "expected": []
+      },
+      {
+        "type": "exists",
+        "field": "distance_nm"
+      },
+      {
+        "type": "exists",
+        "field": "eca_distance_nm"
+      },
+      {
+        "type": "exists",
+        "field": "waypoints"
+      },
+      {
+        "type": "range",
+        "field": "distance_nm",
+        "min": 3000,
+        "max": 5000
+      }
+    ]
+  },
+  "Calculate Route Singapore To Rotterdam Via Suez (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [1.3521, 103.8198], \"destination\": [51.9244, 4.4777], \"restrictions\": [], \"include_explanation\": false}'",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "traversed_passage",
+        "expected": "suez"
+      }
+    ]
+  },
+  "Calculate Route With Suez Restriction (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [1.3521, 103.8198], \"destination\": [51.9244, 4.4777], \"restrictions\": [\"suez\"], \"include_explanation\": false}'",
+    "expected_status": 200,
+    "assertions": []
+  },
+  "Calculate Route Us West To Asia (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [34.0522, -118.2437], \"destination\": [1.3521, 103.8198], \"restrictions\": [], \"include_explanation\": false}'",
+    "expected_status": 200,
+    "assertions": []
+  },
+  "Calculate Route Invalid Coordinates (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": \"[95.0\", \"destination\": [40.7128, -74.006]}'",
+    "expected_status": 400,
+    "assertions": []
+  },
+  "Check Point Invalid Coordinates (GET /check-point)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/check-point\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 422,
+    "assertions": []
+  },
+  "Supported Zones Endpoint (GET /supported-zones)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/supported-zones\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "count",
+        "expected": 7
+      },
+      {
+        "type": "exists",
+        "field": "zones"
+      },
+      {
+        "type": "exists",
+        "field": "count"
+      }
+    ]
+  },
+  "Supported Zones Sulphur Limits (GET /supported-zones)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/supported-zones\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": []
+  },
+  "Supported Zones Bounding Boxes (GET /supported-zones)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/supported-zones\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": []
+  },
+  "Route With Multiple Restrictions (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [1.3521, 103.8198], \"destination\": [51.5074, -0.1278], \"restrictions\": \"[\\\"suez\\\"\", \"include_explanation\": false}'",
+    "expected_status": 200,
+    "assertions": []
+  },
+  "Route Coordinate Format (POST /calculate_route)": {
+    "curl": "curl -X POST \"https://your-api-url.rapidapi.com/calculate_route\" \\\n-H \"Content-Type: application/json\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com\" \\\n-d '{\"origin\": [51.9244, 4.4777], \"destination\": [51.5074, -0.1278]}'",
+    "expected_status": 200,
+    "assertions": [
+      {
+        "type": "equals",
+        "field": "origin",
+        "expected": "ROTTERDAM"
+      },
+      {
+        "type": "equals",
+        "field": "destination",
+        "expected": "LONDON"
+      }
+    ]
+  },
+  "Endpoint Response Times (GET /)": {
+    "curl": "curl \"https://your-api-url.rapidapi.com/?latitude=54.5&longitude=3.0\" \\\n-H \"X-RapidAPI-Key: YOUR_API_KEY\" \\\n-H \"X-RapidAPI-Host: your-api-host.rapidapi.com",
+    "expected_status": 200,
+    "assertions": []
+  }
+}
