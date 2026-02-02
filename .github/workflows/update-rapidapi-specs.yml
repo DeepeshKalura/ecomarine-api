@@ -65,10 +65,20 @@ jobs:
           echo "🧪 Running integration tests..."
           uv run pytest tests/integration/ -v --tb=short 2>&1 | tee test_output.log
           
-          # Count tests
-          test_count=$(grep -c "test_" tests/integration/test_api_integration.py || echo "0")
-          passed_count=$(grep -c "PASSED" test_output.log || echo "0")
-          failed_count=$(grep -c "FAILED" test_output.log || echo "0")
+          # Count tests - use proper error handling
+          test_count=$(grep -c "^async def test_" tests/integration/test_api_integration.py 2>/dev/null || echo "0")
+          passed_count=$(grep "PASSED" test_output.log 2>/dev/null | wc -l || echo "0")
+          failed_count=$(grep "FAILED" test_output.log 2>/dev/null | wc -l || echo "0")
+          
+          # Ensure values are clean integers
+          test_count=$(echo "$test_count" | head -1 | tr -d '[:space:]')
+          passed_count=$(echo "$passed_count" | head -1 | tr -d '[:space:]')
+          failed_count=$(echo "$failed_count" | head -1 | tr -d '[:space:]')
+          
+          # Validate and set defaults
+          test_count=${test_count:-0}
+          passed_count=${passed_count:-0}
+          failed_count=${failed_count:-0}
           
           echo "📊 Test Results:"
           echo "   - Total test functions: $test_count"
@@ -80,7 +90,8 @@ jobs:
           echo "PASSED_COUNT=$passed_count" >> $GITHUB_ENV
           echo "FAILED_COUNT=$failed_count" >> $GITHUB_ENV
           
-          if [ "$failed_count" -gt 0 ]; then
+          # Check for failures using arithmetic evaluation
+          if [ "$failed_count" -gt 0 ] 2>/dev/null || [ "$failed_count" != "0" ]; then
             echo "❌ Some tests failed! Blocking deployment."
             exit 1
           fi
