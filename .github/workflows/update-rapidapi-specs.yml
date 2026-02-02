@@ -46,7 +46,10 @@ jobs:
             ${{ runner.os }}-uv-
       
       - name: Install dependencies
-        run: uv sync
+        run: |
+          uv sync
+          # Install PyYAML for YAML conversion
+          pip install pyyaml
       
       - name: Start FastAPI server
         run: |
@@ -56,9 +59,11 @@ jobs:
           echo "Server PID: $SERVER_PID"
           
           # Wait for server to be ready
+          server_ready=false
           for i in {1..30}; do
             if curl -s http://localhost:8000/ > /dev/null; then
               echo "✅ Server is ready!"
+              server_ready=true
               break
             fi
             echo "⏳ Waiting for server... ($i/30)"
@@ -66,6 +71,11 @@ jobs:
           done
           
           # Verify server is running
+          if [ "$server_ready" = false ]; then
+            echo "❌ Server failed to start after 30 attempts"
+            exit 1
+          fi
+          
           curl -s http://localhost:8000/ | jq . || echo "Server check failed"
       
       - name: Generate OpenAPI JSON from FastAPI
@@ -107,7 +117,7 @@ jobs:
           
           # Update OpenAPI spec on RapidAPI
           response=$(curl -s -w "\n%{http_code}" -X PUT \
-            "https://rapidapi.com/apis/${RAPIDAPI_API_ID}/versions/${RAPIDAPI_VERSION_ID}/spec" \
+            "https://platform.p.rapidapi.com/apis/${RAPIDAPI_API_ID}/versions/${RAPIDAPI_VERSION_ID}/spec" \
             -H "X-RapidAPI-Key: ${RAPIDAPI_KEY}" \
             -H "Content-Type: application/json" \
             -d @openapi.json)
@@ -120,23 +130,6 @@ jobs:
           else
             echo "⚠️ RapidAPI update returned HTTP $http_code"
             echo "Response: $body"
-            # Don't fail the workflow if RapidAPI update fails
-            # We still want to commit the updated specs
-          fi
-      
-      - name: Commit updated specs
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Actions Bot"
-          
-          git add openapi.json openapi.yaml
-          
-          if git diff --staged --quiet; then
-            echo "✅ No changes to commit - specs are up to date"
-          else
-            git commit -m "ci: auto-update OpenAPI specs from FastAPI [skip ci]"
-            git push
-            echo "✅ Updated specs committed to repository"
           fi
       
       - name: Cleanup
