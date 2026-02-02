@@ -1,0 +1,108 @@
+name: Manual Deploy to RapidAPI
+
+# This workflow is triggered manually when you want to deploy to RapidAPI
+# Make sure you've run pre-commit first to generate all necessary files
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "deploy" to confirm manual deployment'
+        required: true
+        default: ''
+      notes:
+        description: 'Deployment notes (optional)'
+        required: false
+        default: 'Manual deployment'
+
+jobs:
+  validate-and-deploy:
+    name: Validate & Deploy to RapidAPI
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "deploy" ]; then
+            echo "❌ Confirmation failed. Type 'deploy' to proceed."
+            exit 1
+          fi
+          echo "✅ Deployment confirmed"
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Verify files exist
+        run: |
+          echo "🔍 Verifying pre-commit generated files..."
+          
+          if [ ! -f "openapi.json" ]; then
+            echo "❌ openapi.json not found!"
+            echo "   Run locally: pre-commit run --all-files"
+            exit 1
+          fi
+          
+          if [ ! -f ".rapidapi/tests/test_cases.md" ]; then
+            echo "❌ Test cases not generated!"
+            echo "   Run locally: pre-commit run --all-files"
+            exit 1
+          fi
+          
+          echo "✅ All files verified!"
+          echo ""
+          echo "📦 Files ready for deployment:"
+          ls -lh openapi.json openapi.yaml 2>/dev/null || true
+          echo ""
+          echo "📄 Test documentation:"
+          ls -lh .rapidapi/tests/
+      
+      - name: Display deployment instructions
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════╗"
+          echo "║     MANUAL DEPLOYMENT TO RAPIDAPI INSTRUCTIONS         ║"
+          echo "╚════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "⚠️  Automatic deployment via API requires RapidAPI paid tier"
+          echo ""
+          echo "📋 Manual Steps:"
+          echo ""
+          echo "1️⃣  Upload OpenAPI Specs:"
+          echo "   - Go to: https://rapidapi.com/studio"
+          echo "   - Navigate to your API"
+          echo "   - Go to 'Definitions' tab"
+          echo "   - Upload: openapi.json"
+          echo ""
+          echo "2️⃣  Update Documentation:"
+          echo "   - Go to 'Docs' tab"
+          echo "   - Copy content from: .rapidapi/tests/test_cases.md"
+          echo "   - Paste into documentation editor"
+          echo ""
+          echo "3️⃣  Add Test Examples:"
+          echo "   - Use curl commands from: .rapidapi/tests/curl_commands.json"
+          echo "   - Add to API console examples"
+          echo ""
+          echo "4️⃣  Publish Changes:"
+          echo "   - Review all changes"
+          echo "   - Click 'Publish' to make updates live"
+          echo ""
+          echo "📁 Generated Files Location:"
+          echo "   - openapi.json (API specification)"
+          echo "   - openapi.yaml (YAML format)"
+          echo "   - .rapidapi/tests/test_suite.json"
+          echo "   - .rapidapi/tests/test_cases.md"
+          echo "   - .rapidapi/tests/curl_commands.json"
+          echo ""
+          echo "✨ All files are ready in your repository!"
+          echo ""
+      
+      - name: Show test summary
+        run: |
+          echo "📊 Current Test Status:"
+          if [ -f ".rapidapi/tests/summary.json" ]; then
+            cat .rapidapi/tests/summary.json | python3 -m json.tool 2>/dev/null || cat .rapidapi/tests/summary.json
+          else
+            echo "   Run 'pre-commit run --all-files' to generate test summary"
+          fi
+          echo ""
+          echo "📝 Deployment Notes: ${{ github.event.inputs.notes }}"

@@ -45,6 +45,50 @@ Try the **interactive demo** to see the API in action:
 
 ---
 
+## 🔄 CI/CD & Pre-commit
+
+### Automated Testing
+Tests run automatically on every push via GitHub Actions:
+```bash
+# Run locally before committing
+pytest tests/integration/ -v
+```
+
+### Pre-commit Hooks
+**All RapidAPI artifacts are auto-generated via pre-commit:**
+```bash
+# Install pre-commit
+pip install pre-commit
+pre-commit install
+
+# Run manually before commit
+pre-commit run --all-files
+```
+
+**Generated files (auto-staged):**
+- `openapi.json` - API specification
+- `openapi.yaml` - YAML format
+- `.rapidapi/tests/test_suite.json` - Test definitions
+- `.rapidapi/tests/test_cases.md` - Test documentation
+- `.rapidapi/tests/curl_commands.json` - API examples
+
+### Manual RapidAPI Deployment
+Since auto-deployment requires RapidAPI paid tier:
+
+1. **Run pre-commit** to generate all files
+2. **Go to RapidAPI Studio** → Your API
+3. **Upload** `openapi.json` to Definitions tab
+4. **Copy** `.rapidapi/tests/test_cases.md` to Docs tab
+5. **Publish** your changes
+
+**Or trigger manual workflow:**
+```bash
+# Go to GitHub → Actions → "Manual Deploy to RapidAPI"
+# Click "Run workflow" and type "deploy" to confirm
+```
+
+---
+
 ## 🌍 Perfect For
 
 - **Voyage Planning Software** - Pre-departure fuel calculations

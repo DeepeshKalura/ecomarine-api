@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: ECA Marine API
+  description: API for calculating marine routes and checking ECA zone compliance
+  version: 0.1.0
+paths:
+  /:
+    get:
+      summary: Root
+      description: Health check endpoint.
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /ping:
+    get:
+      summary: Ping
+      description: 'Lightweight health check endpoint for monitoring services.
+
+
+        Returns simple status for load balancers and health check services.'
+      operationId: ping_ping_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /calculate_route:
+    post:
+      summary: Calculate Route
+      description: 'Calculate marine route between origin and destination.
+
+
+        Coordinates should be provided as [latitude, longitude].
+
+        The route avoids restricted passages if specified.
+
+
+        Returns route details including:
+
+        - waypoints: List of [lat, lon] coordinates along the route
+
+        - distance_nm: Total distance in nautical miles
+
+        - eca_distance_nm: Distance within ECA zones in nautical miles
+
+        - traversed_passage: Primary passage used (suez, panama, or null)'
+      operationId: calculate_route_calculate_route_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Calculate Route Calculate Route Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /check-point:
+    get:
+      summary: Check Point
+      description: "Check if coordinates are inside any ECA zone.\n\nArgs:\n    latitude:\
+        \ Latitude in degrees (-90 to 90)\n    longitude: Longitude in degrees (-180\
+        \ to 180)\n\nReturns:\n    If inside ECA zone:\n    {\n        \"inside_eca\"\
+        : true,\n        \"zone_name\": \"North Sea SECA\",\n        \"zone_type\"\
+        : \"seca\",\n        \"required_sulphur\": \"0.1%\",\n        \"regulation\"\
+        : \"IMO 2020\"\n    }\n\n    If outside all zones:\n    {\n        \"inside_eca\"\
+        : false\n    }"
+      operationId: check_point_check_point_get
+      parameters:
+      - name: latitude
+        in: query
+        required: true
+        schema:
+          type: number
+          maximum: 90
+          minimum: -90
+          description: 'Latitude in degrees (-90 to 90). Example: 58.5 for North Sea'
+          title: Latitude
+        description: 'Latitude in degrees (-90 to 90). Example: 58.5 for North Sea'
+      - name: longitude
+        in: query
+        required: true
+        schema:
+          type: number
+          maximum: 180
+          minimum: -180
+          description: 'Longitude in degrees (-180 to 180). Example: 3.2 for North
+            Sea'
+          title: Longitude
+        description: 'Longitude in degrees (-180 to 180). Example: 3.2 for North Sea'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Check Point Check Point Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /supported-zones:
+    get:
+      summary: Supported Zones
+      description: "Get list of all supported ECA zones with metadata.\n\nReturns:\n\
+        \    {\n        \"zones\": [\n            {\n                \"name\": \"\
+        North Sea SECA\",\n                \"type\": \"seca\",\n                \"\
+        year_established\": 2007,\n                \"required_sulphur\": \"0.1%\"\
+        ,\n                \"regulation\": \"IMO 2020\",\n                \"territory\"\
+        : \"EU + UK\",\n                \"status\": \"active\",\n                \"\
+        bounding_box\": {\n                    \"min_lon\": -5.0,\n              \
+        \      \"max_lon\": 10.0,\n                    \"min_lat\": 50.0,\n      \
+        \              \"max_lat\": 62.0\n                }\n            },\n    \
+        \        ...\n        ],\n        \"count\": 7,\n        \"last_updated\"\
+        : \"2025-02-01\"\n    }"
+      operationId: supported_zones_supported_zones_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Supported Zones Supported Zones Get
+components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    RouteRequest:
+      properties:
+        origin:
+          items:
+            type: number
+          type: array
+          maxItems: 2
+          minItems: 2
+          title: Origin
+          description: 'Origin coordinates as [latitude, longitude]. Example: [51.9,
+            4.5] for Rotterdam'
+        destination:
+          items:
+            type: number
+          type: array
+          maxItems: 2
+          minItems: 2
+          title: Destination
+          description: 'Destination coordinates as [latitude, longitude]. Example:
+            [40.7, -74.0] for New York'
+        restrictions:
+          items:
+            type: string
+          type: array
+          title: Restrictions
+          description: 'List of passage restrictions. Options: suez, panama, gibraltar,
+            ormuz, northwest, babalmandab, bosporus, chili'
+          default: []
+        include_explanation:
+          type: boolean
+          title: Include Explanation
+          description: Include AI-generated route analysis (not implemented)
+          default: false
+      type: object
+      required:
+      - origin
+      - destination
+      title: RouteRequest
+      description: 'Request model for route calculation.
+
+
+        Coordinates are in [latitude, longitude] format for user-friendliness.
+
+        These are converted internally to [longitude, latitude] for the searoute function.'
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
